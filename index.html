@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SF Library Circulation Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>San Francisco Public Library Circulation Analysis</h1>
+        <div class="controls">
+            <div class="viz-tabs">
+                <button class="viz-btn" data-viz="custom">Custom Grouped Bar Chart</button>
+                <button class="viz-btn" data-viz="line">Yearly / Monthly Circulation Trend</button>
+                <button class="viz-btn" data-viz="heatmap">Branch Heatmap</button>
+                <button class="viz-btn" data-viz="notice">Notice Preference by Patron Type</button>
+            </div>
+            <div id="trend-mode" style="display:none; margin-bottom:10px;">
+                <button class="trend-btn" data-mode="yearly">Yearly</button>
+                <button class="trend-btn" data-mode="monthly">Monthly</button>
+            </div>
+            <label id="branchLabel">Branch:
+                <select id="branchFilter"></select>
+            </label>
+            <label id="yearLabel">Year:
+                <select id="yearFilter"></select>
+            </label>
+            <label id="monthLabel" style="display:none;">Month:
+                <select id="monthFilter"></select>
+            </label>
+            <label id="metricLabel" style="display:none;">Metric:
+                <select id="metricFilter"></select>
+            </label>
+            <label id="groupbyLabel" style="display:none;">Group By:
+                <select id="groupbyFilter"></select>
+            </label>
+            <label id="heatmapValueLabel" style="display:none;">Value:
+                <select id="heatmapValueFilter"></select>
+            </label>
+            <label id="heatmapRowLabel" style="display:none;">Row:
+                <select id="heatmapRowFilter"></select>
+            </label>
+            <label id="heatmapColLabel" style="display:none;">Column:
+                <select id="heatmapColFilter"></select>
+            </label>
+        </div>
+        <div id="visualization"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
