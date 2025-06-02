@@ -29,6 +29,8 @@ d3.csv("library_data.csv").then(data => {
         d.Branch = d["Home Library Definition"];
     });
 
+    let currentViz = "sunburst";
+
     const branches = Array.from(new Set(data.map(d => d.Branch))).sort();
     const branchFilter = d3.select("#branchFilter");
     branchFilter.append("option").text("Total").attr("value", "");
@@ -47,7 +49,7 @@ d3.csv("library_data.csv").then(data => {
 
     const monthLabel = d3.select("#monthLabel");
     const monthFilter = d3.select("#monthFilter");
-    
+
     monthFilter.selectAll("option").remove();
     monthFilter.append("option").text("All").attr("value", "");
     monthNumberToShort.forEach((m, i) => {
@@ -57,7 +59,7 @@ d3.csv("library_data.csv").then(data => {
     let trendMode = "yearly";
     const trendModeDiv = d3.select("#trend-mode");
     const trendBtns = d3.selectAll(".trend-btn");
-    trendBtns.on("click", function() {
+    trendBtns.on("click", function () {
         trendBtns.classed("active", false);
         d3.select(this).classed("active", true);
         trendMode = d3.select(this).attr("data-mode");
@@ -96,14 +98,14 @@ d3.csv("library_data.csv").then(data => {
         const metric = metricFilter.property("value");
         const groupby = groupbyFilter.property("value");
         const selectedBranch = branchFilter.property("value");
-        
+
         let filtered = data;
         if (selectedBranch) {
             filtered = filtered.filter(d => d.Branch === selectedBranch);
         }
         if (!metric || !groupby) return;
         if (metric === "all") {
-            
+
             const grouped = d3.rollups(
                 filtered,
                 v => ({
@@ -169,16 +171,16 @@ d3.csv("library_data.csv").then(data => {
                 .attr("width", x1.bandwidth())
                 .attr("height", d => height - y(d.value))
                 .attr("fill", d => colorScales[d.key](d.value))
-                .on("mouseover", function(event, d) {
+                .on("mouseover", function (event, d) {
                     tooltip.transition().duration(200).style("opacity", .9);
                     tooltip.html(`<b>${d.group}</b><br>${d.key === 'checkouts' ? 'Checkouts' : 'Renewals'}: ${d.value}`)
                         .style("left", (event.pageX + 10) + "px")
                         .style("top", (event.pageY - 28) + "px");
                 })
-                .on("mouseout", function() {
+                .on("mouseout", function () {
                     tooltip.transition().duration(500).style("opacity", 0);
                 });
-            
+
             const legend = svg.append("g")
                 .attr("transform", `translate(0, -30)`);
             subgroups.forEach((key, i) => {
@@ -186,7 +188,7 @@ d3.csv("library_data.csv").then(data => {
                     .attr("x", i * 120)
                     .attr("width", 18)
                     .attr("height", 18)
-                    .attr("fill", colorScales[key]((maxVal+minVal)/2));
+                    .attr("fill", colorScales[key]((maxVal + minVal) / 2));
                 legend.append("text")
                     .attr("x", i * 120 + 24)
                     .attr("y", 14)
@@ -207,7 +209,7 @@ d3.csv("library_data.csv").then(data => {
                 .attr("y", height + margin.bottom - 10)
                 .text(groupby);
         } else {
-            
+
             const grouped = d3.rollup(
                 filtered,
                 v => d3.sum(v, d => +d[metric]),
@@ -241,7 +243,7 @@ d3.csv("library_data.csv").then(data => {
                 .range([height, 0]);
             svg.append("g")
                 .call(d3.axisLeft(y));
-            
+
             const minVal = d3.min(chartData, d => d.value);
             const maxVal = d3.max(chartData, d => d.value);
             const colorScale = d3.scaleSequential()
@@ -256,13 +258,13 @@ d3.csv("library_data.csv").then(data => {
                 .attr("width", x.bandwidth())
                 .attr("height", d => height - y(d.value))
                 .attr("fill", d => colorScale(d.value))
-                .on("mouseover", function(event, d) {
+                .on("mouseover", function (event, d) {
                     tooltip.transition().duration(200).style("opacity", .9);
                     tooltip.html(`<b>${d.key}</b><br>${metric}: ${d.value}`)
                         .style("left", (event.pageX + 10) + "px")
                         .style("top", (event.pageY - 28) + "px");
                 })
-                .on("mouseout", function() {
+                .on("mouseout", function () {
                     tooltip.transition().duration(500).style("opacity", 0);
                 });
             svg.append("text")
@@ -281,7 +283,7 @@ d3.csv("library_data.csv").then(data => {
         }
     }
 
-    
+
     function filterData() {
         const selectedBranch = branchFilter.property("value");
         const selectedYear = yearFilter.property("value");
@@ -301,12 +303,12 @@ d3.csv("library_data.csv").then(data => {
         return filtered;
     }
 
-    
+
     function drawLineChart(filtered) {
         let chartData;
         let xDomain, xLabel, xTickFormat;
         if (trendMode === "yearly") {
-            
+
             const yearly = d3.rollup(
                 filtered,
                 v => d3.sum(v, d => d.TotalCheckouts),
@@ -318,7 +320,7 @@ d3.csv("library_data.csv").then(data => {
             xLabel = "Year";
             xTickFormat = d => d;
         } else {
-            
+
             const monthly = d3.rollup(
                 filtered,
                 v => d3.sum(v, d => d.TotalCheckouts),
@@ -330,9 +332,9 @@ d3.csv("library_data.csv").then(data => {
             xLabel = "Month";
             xTickFormat = d => monthNumberToShort[d - 1];
         }
-        
+
         chartData = chartData.filter(d => !isNaN(d.count) && (trendMode === "yearly" ? !isNaN(d.year) : !isNaN(d.month)));
-        
+
         if (trendMode === "yearly") {
             xDomain = chartData.map(d => d.year);
         } else {
@@ -348,12 +350,12 @@ d3.csv("library_data.csv").then(data => {
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
-        
+
         const x = d3.scaleBand()
             .domain(xDomain)
             .range([0, width])
             .padding(0.1);
-        
+
         const y = d3.scaleLinear()
             .domain([0, d3.max(chartData, d => d.count)]).nice()
             .range([height, 0]);
@@ -362,7 +364,7 @@ d3.csv("library_data.csv").then(data => {
             .call(d3.axisBottom(x).tickFormat(xTickFormat));
         svg.append("g")
             .call(d3.axisLeft(y));
-        
+
         const line = d3.line()
             .x(d => x(trendMode === "yearly" ? d.year : d.month) + x.bandwidth() / 2)
             .y(d => y(d.count));
@@ -372,7 +374,7 @@ d3.csv("library_data.csv").then(data => {
             .attr("stroke", "#4CAF50")
             .attr("stroke-width", 2)
             .attr("d", line);
-        
+
         svg.selectAll("circle")
             .data(chartData)
             .enter()
@@ -381,17 +383,17 @@ d3.csv("library_data.csv").then(data => {
             .attr("cy", d => y(d.count))
             .attr("r", 4)
             .attr("fill", "#4CAF50")
-            .on("mouseover", function(event, d) {
+            .on("mouseover", function (event, d) {
                 let label = trendMode === "yearly" ? `Year: ${d.year}` : `Month: ${d.month}`;
                 tooltip.transition().duration(200).style("opacity", .9);
                 tooltip.html(`${label}<br>Checkouts: ${d.count.toLocaleString()}`)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 28) + "px");
             })
-            .on("mouseout", function() {
+            .on("mouseout", function () {
                 tooltip.transition().duration(500).style("opacity", 0);
             });
-        
+
         svg.append("text")
             .attr("class", "axis-label")
             .attr("text-anchor", "middle")
@@ -399,7 +401,7 @@ d3.csv("library_data.csv").then(data => {
             .attr("x", -height / 2)
             .attr("y", -margin.left + 10)
             .text("Checkouts");
-        
+
         svg.append("text")
             .attr("class", "axis-label")
             .attr("text-anchor", "middle")
@@ -408,18 +410,18 @@ d3.csv("library_data.csv").then(data => {
             .text(xLabel);
     }
 
-    
+
     const heatmapValueLabel = d3.select("#heatmapValueLabel");
     const heatmapValueFilter = d3.select("#heatmapValueFilter");
     const heatmapRowLabel = d3.select("#heatmapRowLabel");
     const heatmapRowFilter = d3.select("#heatmapRowFilter");
     const heatmapColLabel = d3.select("#heatmapColLabel");
     const heatmapColFilter = d3.select("#heatmapColFilter");
-    
-    const numericColsHeatmap = ["Total","Total Checkouts", "Total Renewals"];
+
+    const numericColsHeatmap = ["Total", "Total Checkouts", "Total Renewals"];
     const rowColsHeatmap = ["Patron Type Definition", "Home Library Definition", "Age Range"];
-    const colColsHeatmap = [ "Supervisor District", "Patron Type Definition"];
-    
+    const colColsHeatmap = ["Supervisor District", "Patron Type Definition"];
+
     function populateHeatmapDropdowns() {
         heatmapValueFilter.selectAll("option").remove();
         heatmapValueFilter.append("option").text("Total").attr("value", "total");
@@ -440,13 +442,13 @@ d3.csv("library_data.csv").then(data => {
                 heatmapColFilter.append("option").text(col).attr("value", col);
             }
         });
-        
+
         heatmapValueFilter.property("value", "total");
         if (heatmapRowFilter.selectAll("option").size() > 0) heatmapRowFilter.property("value", rowColsHeatmap[0]);
         if (heatmapColFilter.selectAll("option").size() > 0) heatmapColFilter.property("value", colColsHeatmap[0]);
     }
 
-    
+
     function drawHeatmap() {
         d3.select("#visualization").selectAll("*").remove();
         const valueCol = heatmapValueFilter.property("value");
@@ -454,10 +456,10 @@ d3.csv("library_data.csv").then(data => {
         const colCol = heatmapColFilter.property("value");
         if (!valueCol || !rowCol || !colCol) return;
         if (rowCol === colCol) {
-            d3.select("#visualization").append("div").style("color","#b00").style("font-size","18px").text("Row and Column must be different.");
+            d3.select("#visualization").append("div").style("color", "#b00").style("font-size", "18px").text("Row and Column must be different.");
             return;
         }
-        
+
         let pivot;
         if (valueCol === "total") {
             pivot = d3.rollups(
@@ -476,11 +478,11 @@ d3.csv("library_data.csv").then(data => {
         }
         const rowKeys = Array.from(new Set(data.map(d => d[rowCol]))).filter(d => d !== undefined && d !== null && d !== "");
         let colKeys = Array.from(new Set(data.map(d => d[colCol]))).filter(d => d !== undefined && d !== null && d !== "");
-        
+
         if (colCol === "Circulation Active Month") {
             colKeys = monthNumberToShort;
         }
-        
+
         let heatmapData = [];
         pivot.forEach(([row, arr]) => {
             const colMap = new Map(arr);
@@ -492,16 +494,16 @@ d3.csv("library_data.csv").then(data => {
                 });
             });
         });
-        
+
         const values = heatmapData.map(d => d.value).filter(v => v !== undefined && !isNaN(v));
         if (values.length === 0) {
-            d3.select("#visualization").append("div").style("color","#b00").style("font-size","18px").text("No data for selected combination.");
+            d3.select("#visualization").append("div").style("color", "#b00").style("font-size", "18px").text("No data for selected combination.");
             return;
         }
         const minVal = d3.min(values);
         const maxVal = d3.max(values);
         const colorScale = d3.scaleSequential().domain([minVal, maxVal]).interpolator(d3.interpolateViridis);
-        
+
         const margin = { top: 80, right: 30, bottom: 100, left: 140 };
         const cellSize = 40;
         const width = colKeys.length * cellSize;
@@ -512,7 +514,7 @@ d3.csv("library_data.csv").then(data => {
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
-        
+
         svg.selectAll()
             .data(heatmapData)
             .enter()
@@ -523,7 +525,7 @@ d3.csv("library_data.csv").then(data => {
             .attr("height", cellSize)
             .attr("fill", d => d.value === undefined || isNaN(d.value) ? "#eee" : colorScale(d.value))
             .attr("stroke", "#fff")
-            .on("mouseover", function(event, d) {
+            .on("mouseover", function (event, d) {
                 if (d.value !== undefined && !isNaN(d.value)) {
                     tooltip.transition().duration(200).style("opacity", .9);
                     tooltip.html(`<b>${rowCol}: ${d.row}<br>${colCol}: ${d.col}<br>${valueCol}: ${d.value.toFixed(1)}`)
@@ -531,10 +533,10 @@ d3.csv("library_data.csv").then(data => {
                         .style("top", (event.pageY - 28) + "px");
                 }
             })
-            .on("mouseout", function() {
+            .on("mouseout", function () {
                 tooltip.transition().duration(500).style("opacity", 0);
             });
-        
+
         svg.append("g")
             .selectAll("text")
             .data(colKeys)
@@ -546,7 +548,7 @@ d3.csv("library_data.csv").then(data => {
             .attr("font-size", "13px")
             .attr("transform", (d, i) => `rotate(-45,${i * cellSize + cellSize / 2},${height + 18})`)
             .text(d => d);
-        
+
         svg.append("g")
             .selectAll("text")
             .data(rowKeys)
@@ -557,7 +559,7 @@ d3.csv("library_data.csv").then(data => {
             .attr("text-anchor", "end")
             .attr("font-size", "13px")
             .text(d => d);
-        
+
         svg.append("text")
             .attr("x", width / 2)
             .attr("y", -60)
@@ -567,19 +569,19 @@ d3.csv("library_data.csv").then(data => {
             .text(`${rowCol} vs ${colCol} (mean ${valueCol})`);
     }
 
-    
+
     function drawNoticeBarChart(filtered) {
         d3.select("#visualization").selectAll("*").remove();
-        
+
         const groupData = d3.rollups(
             filtered,
             v => v.length,
             d => d["Patron Type Definition"],
             d => d["Notice Preference Definition"]
         );
-        
+
         const noticeTypes = Array.from(new Set(filtered.map(d => d["Notice Preference Definition"])));
-        
+
         let chartData = [];
         groupData.forEach(([patronType, arr]) => {
             const noticeMap = new Map(arr);
@@ -591,51 +593,51 @@ d3.csv("library_data.csv").then(data => {
                 });
             });
         });
-        
+
         const validPatronTypes = Array.from(new Set(chartData
             .filter(d => d.count > 0)
             .map(d => d.patronType)));
         chartData = chartData.filter(d => validPatronTypes.includes(d.patronType));
-        
+
         const margin = { top: 40, right: 30, bottom: 100, left: 70 };
         const width = 900 - margin.left - margin.right;
         const height = 500 - margin.top - margin.bottom;
-        
+
         const svg = d3.select("#visualization")
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
-        
+
         const x0 = d3.scaleBand()
             .domain(validPatronTypes)
             .range([0, width])
             .paddingInner(0.2);
-        
+
         const x1 = d3.scaleBand()
             .domain(noticeTypes)
             .range([0, x0.bandwidth()])
             .padding(0.05);
-        
+
         const y = d3.scaleLinear()
             .domain([0, d3.max(chartData, d => d.count)]).nice()
             .range([height, 0]);
-        
+
         const color = d3.scaleOrdinal()
             .domain(noticeTypes)
             .range(d3.schemeSet2);
-        
+
         svg.append("g")
             .attr("transform", `translate(0,${height})`)
             .call(d3.axisBottom(x0))
             .selectAll("text")
             .attr("transform", "rotate(-30)")
             .style("text-anchor", "end");
-        
+
         svg.append("g")
             .call(d3.axisLeft(y));
-        
+
         svg.selectAll("g.bar-group")
             .data(validPatronTypes)
             .enter()
@@ -651,16 +653,16 @@ d3.csv("library_data.csv").then(data => {
             .attr("width", x1.bandwidth())
             .attr("height", d => height - y(d.count))
             .attr("fill", d => color(d.noticeType))
-            .on("mouseover", function(event, d) {
+            .on("mouseover", function (event, d) {
                 tooltip.transition().duration(200).style("opacity", .9);
                 tooltip.html(`<b>${d.patronType}</b><br>${d.noticeType}: ${d.count}`)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 28) + "px");
             })
-            .on("mouseout", function() {
+            .on("mouseout", function () {
                 tooltip.transition().duration(500).style("opacity", 0);
             });
-        
+
         const legend = svg.append("g")
             .attr("transform", `translate(0, -30)`);
         noticeTypes.forEach((nt, i) => {
@@ -675,7 +677,7 @@ d3.csv("library_data.csv").then(data => {
                 .text(nt)
                 .style("font-size", "13px");
         });
-        
+
         svg.append("text")
             .attr("class", "axis-label")
             .attr("text-anchor", "middle")
@@ -685,10 +687,10 @@ d3.csv("library_data.csv").then(data => {
             .text("Count");
     }
 
-    
+
     function drawPatronBarChart(filtered) {
         d3.select("#visualization").selectAll("*").remove();
-        
+
         const groupData = d3.rollups(
             filtered,
             v => ({
@@ -703,7 +705,7 @@ d3.csv("library_data.csv").then(data => {
             checkouts: vals.checkouts,
             renewals: vals.renewals
         }));
-        
+
         const margin = { top: 40, right: 30, bottom: 60, left: 80 };
         const width = 900 - margin.left - margin.right;
         const height = 500 - margin.top - margin.bottom;
@@ -713,36 +715,36 @@ d3.csv("library_data.csv").then(data => {
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
-        
+
         const x0 = d3.scaleBand()
             .domain(patronTypes)
             .range([0, width])
             .padding(0.2);
-        
+
         const subgroups = ["checkouts", "renewals"];
         const x1 = d3.scaleBand()
             .domain(subgroups)
             .range([0, x0.bandwidth()])
             .padding(0.1);
-        
+
         const y = d3.scaleLinear()
             .domain([0, d3.max(chartData, d => Math.max(d.checkouts, d.renewals))]).nice()
             .range([height, 0]);
-        
+
         const color = d3.scaleOrdinal()
             .domain(subgroups)
             .range(["#4CAF50", "#2196F3"]);
-        
+
         svg.append("g")
             .attr("transform", `translate(0,${height})`)
             .call(d3.axisBottom(x0))
             .selectAll("text")
             .attr("transform", "rotate(-30)")
             .style("text-anchor", "end");
-        
+
         svg.append("g")
             .call(d3.axisLeft(y));
-        
+
         svg.selectAll("g.bar-group")
             .data(chartData)
             .enter()
@@ -758,16 +760,16 @@ d3.csv("library_data.csv").then(data => {
             .attr("width", x1.bandwidth())
             .attr("height", d => height - y(d.value))
             .attr("fill", d => color(d.key))
-            .on("mouseover", function(event, d) {
+            .on("mouseover", function (event, d) {
                 tooltip.transition().duration(200).style("opacity", .9);
                 tooltip.html(`<b>${d.patronType}</b><br>${d.key === 'checkouts' ? 'Checkouts' : 'Renewals'}: ${d.value}`)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 28) + "px");
             })
-            .on("mouseout", function() {
+            .on("mouseout", function () {
                 tooltip.transition().duration(500).style("opacity", 0);
             });
-        
+
         const legend = svg.append("g")
             .attr("transform", `translate(0, -30)`);
         subgroups.forEach((key, i) => {
@@ -782,7 +784,7 @@ d3.csv("library_data.csv").then(data => {
                 .text(key === 'checkouts' ? 'Checkouts' : 'Renewals')
                 .style("font-size", "13px");
         });
-        
+
         svg.append("text")
             .attr("class", "axis-label")
             .attr("text-anchor", "middle")
@@ -792,9 +794,146 @@ d3.csv("library_data.csv").then(data => {
             .text("Count");
     }
 
-    
-    let currentViz = "custom";
+
+    function drawSunburst(filtered) {
+        d3.select("#visualization").selectAll("*").remove();
+
+
+        const width = 700;
+        const radius = width / 2;
+
+
+        const partition = data => {
+            const root = d3.hierarchy(data)
+                .sum(d => d.value)
+                .sort((a, b) => b.value - a.value);
+            return d3.partition()
+                .size([2 * Math.PI, root.height + 1])
+                (root);
+        };
+
+
+        const arc = d3.arc()
+            .startAngle(d => d.x0)
+            .endAngle(d => d.x1)
+            .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
+            .padRadius(radius * 1.5)
+            .innerRadius(d => d.y0 * radius * 0.2)
+            .outerRadius(d => Math.max(d.y0 * radius * 0.2, d.y1 * radius * 0.2 - 1));
+
+
+        const hierarchyData = {
+            name: "root",
+            children: []
+        };
+
+
+        const byBranch = d3.group(filtered, d => d.Branch);
+        byBranch.forEach((branchData, branch) => {
+            const branchNode = {
+                name: branch,
+                children: []
+            };
+
+
+            const byPatronType = d3.group(branchData, d => d["Patron Type Definition"]);
+            byPatronType.forEach((patronData, patronType) => {
+                const patronNode = {
+                    name: patronType,
+                    children: []
+                };
+
+
+                const byAgeRange = d3.group(patronData, d => d["Age Range"]);
+                byAgeRange.forEach((ageData, ageRange) => {
+                    patronNode.children.push({
+                        name: ageRange,
+                        value: d3.sum(ageData, d => d.TotalCheckouts)
+                    });
+                });
+
+                branchNode.children.push(patronNode);
+            });
+
+            hierarchyData.children.push(branchNode);
+        });
+
+
+        const svg = d3.select("#visualization")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", width)
+            .attr("viewBox", `${-width / 2} ${-width / 2} ${width} ${width}`)
+            .style("font", "12px sans-serif");
+
+
+        const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, hierarchyData.children.length + 1));
+
+
+        const root = partition(hierarchyData);
+
+
+        svg.append("g")
+            .selectAll("path")
+            .data(root.descendants().slice(1))
+            .join("path")
+            .attr("class", "sunburst-path")
+            .attr("fill", d => {
+                while (d.depth > 1) d = d.parent;
+                return color(d.data.name);
+            })
+            .attr("fill-opacity", d => d.depth === 1 ? 0.7 : d.depth === 2 ? 0.5 : 0.3)
+            .attr("d", arc)
+            .on("mouseover", (event, d) => {
+                const percentage = ((100 * d.value) / root.value).toFixed(1);
+                tooltip.transition().duration(200).style("opacity", .9);
+                tooltip.html(`${d.ancestors().map(d => d.data.name).reverse().slice(1).join(" > ")}<br>Checkouts: ${d.value.toLocaleString()}<br>${percentage}%`)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+
+
+                svg.selectAll("path")
+                    .attr("fill-opacity", node =>
+                        d.ancestors().indexOf(node) >= 0 ? 1 :
+                            node.depth === 1 ? 0.3 :
+                                node.depth === 2 ? 0.2 :
+                                    0.1
+                    );
+            })
+            .on("mouseout", () => {
+                tooltip.transition().duration(500).style("opacity", 0);
+
+
+                svg.selectAll("path")
+                    .attr("fill-opacity", d => d.depth === 1 ? 0.7 : d.depth === 2 ? 0.5 : 0.3);
+            });
+
+
+        const centerText = svg.append("text")
+            .attr("class", "sunburst-center-text")
+            .attr("text-anchor", "middle")
+            .attr("font-size", "14px")
+            .attr("fill", "#666");
+
+        centerText.append("tspan")
+            .attr("x", 0)
+            .attr("y", -5)
+            .text("Library Circulation");
+
+        centerText.append("tspan")
+            .attr("x", 0)
+            .attr("y", 15)
+            .attr("font-size", "8px")
+            .text("Branch > Patron Type > Age Range");
+    }
+
+    function arcVisible(d) {
+        return d.y1 <= 3 && d.y0 >= 1 && d.x1 > d.x0;
+    }
+
     function updateVisualization() {
+        const filtered = filterData();
+
         if (currentViz === "line") {
             trendModeDiv.style("display", null);
             if (trendMode === "yearly") {
@@ -809,6 +948,7 @@ d3.csv("library_data.csv").then(data => {
             yearLabel.style("display", "none");
             monthLabel.style("display", "none");
         }
+
         if (currentViz === "custom") {
             metricLabel.style("display", null);
             groupbyLabel.style("display", null);
@@ -818,6 +958,7 @@ d3.csv("library_data.csv").then(data => {
             metricLabel.style("display", "none");
             groupbyLabel.style("display", "none");
         }
+
         if (currentViz === "heatmap") {
             heatmapValueLabel.style("display", null);
             heatmapRowLabel.style("display", null);
@@ -830,7 +971,7 @@ d3.csv("library_data.csv").then(data => {
             heatmapColLabel.style("display", "none");
             if (currentViz !== "custom") d3.select("#branchLabel").style("display", null);
         }
-        const filtered = filterData();
+
         if (currentViz === "line") {
             drawLineChart(filtered);
         } else if (currentViz === "heatmap") {
@@ -839,18 +980,18 @@ d3.csv("library_data.csv").then(data => {
             drawNoticeBarChart(filtered);
         } else if (currentViz === "patron") {
             drawPatronBarChart(filtered);
+        } else if (currentViz === "sunburst") {
+            drawSunburst(filtered);
         }
     }
 
-    
-    d3.selectAll(".viz-btn").on("click", function() {
+    d3.selectAll(".viz-btn").on("click", function () {
         d3.selectAll(".viz-btn").classed("active", false);
         d3.select(this).classed("active", true);
         currentViz = d3.select(this).attr("data-viz");
         updateVisualization();
     });
 
-    
     branchFilter.on("change", updateVisualization);
     yearFilter.on("change", updateVisualization);
     monthFilter.on("change", updateVisualization);
@@ -860,15 +1001,14 @@ d3.csv("library_data.csv").then(data => {
     heatmapRowFilter.on("change", updateVisualization);
     heatmapColFilter.on("change", updateVisualization);
 
-    
+
     populateCustomDropdowns();
     populateHeatmapDropdowns();
-    
-    if (branchFilter.selectAll("option").size() > 0) {
-        branchFilter.property("value", "");
-    }
-    
-    if (metricFilter.selectAll("option").size() > 0 && groupbyFilter.selectAll("option").size() > 0) {
-        updateVisualization();
-    }
+
+
+    d3.selectAll(".viz-btn").classed("active", false);
+    d3.select(`[data-viz="sunburst"]`).classed("active", true);
+
+
+    updateVisualization();
 }); 

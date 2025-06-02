@@ -28,7 +28,7 @@ h1 {
     align-items: center;
 }
 
-#visualization > svg {
+#visualization>svg {
     display: block;
     margin: 0 auto;
 }
@@ -73,7 +73,8 @@ h1 {
     transition: background 0.2s, color 0.2s;
 }
 
-.viz-btn.active, .viz-btn:hover {
+.viz-btn.active,
+.viz-btn:hover {
     background: #4CAF50;
     color: #fff;
 }
@@ -89,7 +90,21 @@ h1 {
     transition: background 0.2s, color 0.2s;
 }
 
-.trend-btn.active, .trend-btn:hover {
+.trend-btn.active,
+.trend-btn:hover {
     background: #4CAF50;
     color: #fff;
-} 
+}
+
+.sunburst-path {
+    transition: fill-opacity 0.3s;
+}
+
+.sunburst-path:hover {
+    fill-opacity: 0.8;
+}
+
+.sunburst-center-text {
+    font-family: Arial, sans-serif;
+    pointer-events: none;
+}
